@@ -26,31 +26,45 @@ pipeline {
                             echo "Installing virtualenv..."
                             pip install virtualenv
                         fi
-                        '''
-                    }
-                }
-            }
-        }
 
-        stage('Install Python Dependencies') {
-            steps {
-                dir("${PROJECT_HOME}") {
-                    script {
-                        // Install virtualenv if not available
-                        sh '''#!/bin/bash
                         # Delete previously built virtualenv and create a new one
                         rm -rf $PYENV_HOME
                         virtualenv $PYENV_HOME
                         source $PYENV_HOME/bin/activate
-
-                        # Install required Python packages
-                        pip install -r requirements.txt
                         '''
                     }
                 }
             }
         }
-
+        stage('Parallel stage'){
+            parallel {
+                stage('Install Python Dependencies') {
+                    steps {
+                        dir("${PROJECT_HOME}") {
+                            script {
+                                // Install virtualenv if not available
+                                sh '''#!/bin/bash
+                                # Install required Python packages
+                                pip install -r requirements.txt
+                                '''
+                            }
+                        }
+                    }
+                }
+                stage('Echo stage') {
+                    steps {
+                        dir("${PROJECT_HOME}") {
+                            script {
+                                // Install virtualenv if not available
+                                sh '''#!/bin/bash
+                                echo "hello world"
+                                '''
+                            }
+                        }
+                    }
+                }
+            }
+        }
         stage('Run Flask Application') {
             steps {
                 dir("${PROJECT_HOME}") {
